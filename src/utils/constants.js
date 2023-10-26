@@ -1,6 +1,10 @@
+export const submitBtnMessageDefault = 'Сохранить';
+export const createBtnMessageDefault = 'Создать';
 export const submitBtnMessage = 'Сохранение...';
 export const deleteBtnMessage = 'Удаление...';
+export const deleteBtnMessageDefault = 'Удалить';
 
+export const authUrl = 'https://auth.nomoreparties.co';
 
 export const authMessageSuccess = {
     img: 'success',
@@ -13,7 +17,11 @@ export const authMessageFailure = {
 };
 
 export const options = {
-    baseUrl: 'https://auth.nomoreparties.co',
+    baseUrl: 'https://mesto.nomoreparties.co/v1/cohort-71',
+    headers: {
+        authorization: '326ea589-4f82-4ea1-88c2-8d864e356042',
+        'Content-Type': 'application/json'
+    }
 }
 export const config = {
     formSelector: '.form',

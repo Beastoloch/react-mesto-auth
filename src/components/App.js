@@ -9,9 +9,13 @@ import AddPlacePopup from "./landing/AddPlacePopup";
 import DeletePlacePopup from "./landing/DeletePlacePopup";
 import Register from "./landing/Register";
 import Login from "./landing/Login";
-import {authMessageSuccess, authMessageFailure, deleteBtnMessage, submitBtnMessage} from "../utils/constants";
+import {
+    authMessageSuccess, authMessageFailure, submitBtnMessage, submitBtnMessageDefault,
+    deleteBtnMessage, deleteBtnMessageDefault, createBtnMessageDefault
+} from "../utils/constants";
 import ProtectedRouteElement from "./landing/ProtectedRoute";
 import api from "../utils/Api";
+import {registerUser, loginUser, checkToken} from "./landing/Auth";
 import {CurrentUserContext} from "../contexts/CurrentUserContext";
 import InfoTooltip from "./landing/InfoTooltip";
 
@@ -30,14 +34,29 @@ function App() {
     const [cards, setCards] = useState([]);
     const [loggedIn, setLoggedIn] = useState(false);
     const [authMessage, setAuthMessage] = useState({});
+    const [userEmail, setUserEmail] = useState('');
+    const [submitBtn, setSubmitBtn] = useState(submitBtnMessageDefault);
+    const [deleteBtn, setDeleteBtn] = useState(deleteBtnMessageDefault);
+    const [createBtn, setCreateBtn] = useState(createBtnMessageDefault);
     const navigate = useNavigate();
 
     useEffect(() => {
+        api.getUserInfo()
+            .then(user => {
+                setCurrentUser(user);
+            })
+            .catch((err)=>{
+                console.log(`Ошибка...: ${err}`);
+            })
+    }, [loggedIn])
+
+
+    useEffect(() => {
         if(isTokenExist()){
-            api.checkToken(localStorage.getItem('jwt'))
+            checkToken(localStorage.getItem('jwt'))
                 .then(value => {
                     if(value) {
-                        setCurrentUser(value.data);
+                        setUserEmail(value.data.email);
                         setLoggedIn(true);
                         navigate('/', {replace: true})
                     }
@@ -51,9 +70,9 @@ function App() {
 
     useEffect(() => {
         if(isTokenExist()){
-            api.getInitialCards(localStorage.getItem('jwt'))
+            api.getInitialCards()
                 .then(value => {
-                    setCards(value.data.reverse());
+                    setCards(value.reverse());
                 })
                 .catch((err)=>{
                     console.log(`Ошибка...: ${err}`);
@@ -108,12 +127,12 @@ function App() {
     }
 
     const handleCardLike = (card) => {
-        const isLiked = card.likes.some((i) => i === currentUser._id);
-        api.changeLikeCardStatus(card._id, !isLiked, localStorage.getItem('jwt'))
+        const isLiked = card.likes.some(i => i._id === currentUser._id);
+        api.changeLikeCardStatus(card._id, !isLiked)
             .then((newCard) => {
                 setCards((state) =>
                     state.map((c) =>
-                        c._id === card._id ? newCard.data : c));
+                        c._id === card._id ? newCard : c));
             })
             .catch((err)=>{
                 console.log(`Ошибка...: ${err}`);
@@ -121,7 +140,8 @@ function App() {
     }
 
     const handleCardDelete = (card) => {
-        api.deleteCard(card._id, localStorage.getItem('jwt'))
+        setDeleteBtn(deleteBtnMessage);
+        api.deleteCard(card._id)
             .then((deletedCard) => {
                 setCards((state) =>
                     state.filter((c) =>
@@ -131,47 +151,63 @@ function App() {
             .catch((err)=>{
                 console.log(`Ошибка...: ${err}`);
             })
+            .finally(() => {
+                setDeleteBtn(deleteBtnMessageDefault);
+            })
     }
 
     const handleUpdateUser = (userInfo) => {
-        api.setUserInfo(userInfo.name, userInfo.about, localStorage.getItem('jwt'))
+        setSubmitBtn(submitBtnMessage);
+        api.setUserInfo(userInfo.name, userInfo.about)
             .then(user => {
-                setCurrentUser(user.data);
+                setCurrentUser(user);
                 closeAllPopups();
             })
             .catch((err)=>{
                 console.log(`Ошибка...: ${err}`);
+            })
+            .finally(() => {
+                setSubmitBtn(submitBtnMessageDefault);
             })
     }
 
     const handleUpdateAvatar = (avatarLink) => {
-        api.setUserAvatar(avatarLink, localStorage.getItem('jwt'))
+        setSubmitBtn(submitBtnMessage);
+        api.setUserAvatar(avatarLink)
             .then(user => {
-                setCurrentUser(user.data);
+                setCurrentUser(user);
                 closeAllPopups();
             })
             .catch((err)=>{
                 console.log(`Ошибка...: ${err}`);
+            })
+            .finally(() => {
+                setSubmitBtn(submitBtnMessageDefault);
             })
     }
 
     const handleAddPlaceSubmit = (card) => {
-        api.postNewCard(card.name, card.link, localStorage.getItem('jwt'))
+        setCreateBtn(submitBtnMessage);
+        api.postNewCard(card.name, card.link)
             .then(newCard => {
-                setCards([newCard.data, ...cards]);
+                setCards([newCard, ...cards]);
                 closeAllPopups();
             })
             .catch((err)=>{
                 console.log(`Ошибка...: ${err}`);
             })
+            .finally(() => {
+                setCreateBtn(createBtnMessageDefault);
+            })
     }
 
     const handleRegisterSubmit = (authInfo) => {
-        api.registerUser(authInfo.email, authInfo.password)
+        registerUser(authInfo.email, authInfo.password)
             .then((data) => {
                 data ? setAuthMessage(authMessageSuccess) : setAuthMessage(authMessageFailure);
                 setInfoTooltipPopupState(true);
                 setAnyPopupState(true);
+                navigate('/sign-in', {replace: true})
             })
             .catch(err => {
                 console.log(`Ошибка...: ${err}`);
@@ -182,11 +218,11 @@ function App() {
     }
 
     const handleLoginSubmit = (authInfo) => {
-        api.loginUser(authInfo.email, authInfo.password)
+        loginUser(authInfo.email, authInfo.password)
             .then((data) => {
                 localStorage.setItem('jwt', data.token);
                 setLoggedIn(true);
-                navigate('/', {replace: false})
+                navigate('/', {replace: true})
             })
             .catch(err => {
                 console.log(`Ошибка...: ${err}`);
@@ -216,7 +252,7 @@ function App() {
     return (
         <div className="page">
             <CurrentUserContext.Provider value={currentUser}>
-                <Header loggedIn={loggedIn} onLogOut={handleLogOut}/>
+                <Header loggedIn={loggedIn} onLogOut={handleLogOut} userEmail={userEmail}/>
                 <Routes>
                     <Route path='/'
                            element={<ProtectedRouteElement
@@ -227,13 +263,13 @@ function App() {
                     <Route path='/sign-in' element={(!loggedIn) ? <Login onSubmit={handleLoginSubmit}/>  : <Navigate to='/' replace />}/>
                 </Routes>
                 <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser}
-                                 onOverlayClose={handleOverlayClose}/>
+                                 onOverlayClose={handleOverlayClose} btnMessage={submitBtn}/>
                 <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit}
-                                 onOverlayClose={handleOverlayClose}/>
+                                 onOverlayClose={handleOverlayClose} btnMessage={createBtn}/>
                 <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar}
-                                 onOverlayClose={handleOverlayClose}/>
+                                 onOverlayClose={handleOverlayClose} btnMessage={submitBtn}/>
                 <DeletePlacePopup isOpen={isDeletePlacePopupOpen} onClose={closeAllPopups} onDeletePlace={handleCardDelete}
-                                 cardToDelete={cardToDelete} onOverlayClose={handleOverlayClose}/>
+                                 cardToDelete={cardToDelete} onOverlayClose={handleOverlayClose} btnMessage={deleteBtn}/>
                 <ImagePopup selectedCard={selectedCard} isOpen={isImagePopupOpen} onClose={closeAllPopups} />
                 <InfoTooltip authMessage={authMessage} isOpen={isInfoTooltipPopupOpen} onClose={closeAllPopups}
                                  onOverlayClose={handleOverlayClose}/>

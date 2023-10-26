@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import PopupWithForm from "./PopupWithForm";
 import {CurrentUserContext} from "../../contexts/CurrentUserContext";
+import {submitBtnMessage, submitBtnMessageDefault} from "../../utils/constants";
 
 function EditProfilePopup(props) {
 
@@ -30,7 +31,7 @@ function EditProfilePopup(props) {
     }
 
     return(
-        <PopupWithForm title="Редактировать профиль" name="edit" button="Сохранить" isOpen={props.isOpen}
+        <PopupWithForm title="Редактировать профиль" name="edit" button={props.btnMessage} isOpen={props.isOpen}
                        onClose={props.onClose} onSubmit={handleSubmit} onOverlayClose={props.onOverlayClose}>
             <input className="form__input form__input_type_name" type="text" placeholder="Имя" value={name || ''}
                    id="name-input" name="name" required minLength="2" maxLength="40" onChange={handleChangeName}/>

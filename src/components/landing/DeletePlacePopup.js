@@ -9,7 +9,7 @@ function DeletePlacePopup(props) {
     }
 
     return(
-        <PopupWithForm title="Вы уверены?" name="delete" button="Да" isOpen={props.isOpen} onClose={props.onClose}
+        <PopupWithForm title="Вы уверены?" name="delete" button={props.btnMessage} isOpen={props.isOpen} onClose={props.onClose}
                onSubmit={handleSubmit} onOverlayClose={props.onOverlayClose}/>
     );
 }

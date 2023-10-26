@@ -3,6 +3,7 @@ import {options} from "./constants";
 class Api {
     constructor(options) {
         this._baseUrl = options.baseUrl;
+        this._headers = options.headers;
     }
 
     _getResponseData(res) {
@@ -12,27 +13,28 @@ class Api {
         return res.json();
     }
 
-    getInitialCards(jwt){
-        return fetch(`${this._baseUrl}/cards`, {
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization" : `Bearer ${jwt}`
-            }
-        })
+    getInitialCards(){
+        return fetch(`${this._baseUrl}/cards`,
+            {headers: this._headers})
             .then((res) => {
                 return this._getResponseData(res).then((data) => {
-                    return data;
+                    return data.reverse();
                 })
             });
     }
 
-    postNewCard(name, link, jwt) {
+    getUserInfo(){
+        return fetch(`${this._baseUrl}/users/me`,
+            {headers: this._headers})
+            .then((res) => {
+                return this._getResponseData(res)
+            });
+    }
+
+    postNewCard(name, link) {
         return fetch(`${this._baseUrl}/cards`, {
             method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization" : `Bearer ${jwt}`
-            },
+            headers: this._headers,
             body: JSON.stringify({
                 name: name,
                 link: link
@@ -43,13 +45,10 @@ class Api {
             });
     }
 
-    setUserInfo(name, info, jwt){
+    setUserInfo(name, info){
         return fetch(`${this._baseUrl}/users/me`, {
             method: 'PATCH',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization" : `Bearer ${jwt}`
-            },
+            headers: this._headers,
             body: JSON.stringify({
                 name: name,
                 about: info
@@ -60,13 +59,10 @@ class Api {
             });
     }
 
-    setUserAvatar(link, jwt) {
+    setUserAvatar(link) {
         return fetch(`${this._baseUrl}/users/me/avatar`, {
             method: 'PATCH',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization" : `Bearer ${jwt}`
-            },
+            headers: this._headers,
             body: JSON.stringify({
                 avatar: link,
             })
@@ -76,71 +72,20 @@ class Api {
             });
     }
 
-    changeLikeCardStatus(id, isLiked, jwt) {
+    changeLikeCardStatus(id, isLiked) {
         return fetch(`${this._baseUrl}/cards/${id}/likes`, {
             method: isLiked ? 'PUT' : 'DELETE',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization" : `Bearer ${jwt}`
-            },
+            headers: this._headers,
         })
             .then((res) => {
                 return this._getResponseData(res);
             });
     }
 
-    deleteCard(id, jwt) {
+    deleteCard(id) {
         return fetch(`${this._baseUrl}/cards/${id}`, {
             method: 'DELETE',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization" : `Bearer ${jwt}`
-            },
-        })
-            .then((res) => {
-                return this._getResponseData(res);
-            });
-    }
-
-    registerUser(email, password) {
-        return fetch(`${this._baseUrl}/signup`, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                password: password,
-                email: email
-            })
-        })
-            .then((res) => {
-                return this._getResponseData(res);
-            });
-    }
-
-    loginUser(email, password) {
-        return fetch(`${this._baseUrl}/signin`, {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                password: password,
-                email: email
-            })
-        })
-            .then((res) => {
-                return this._getResponseData(res);
-            });
-    }
-
-    checkToken(jwt) {
-        return fetch(`${this._baseUrl}/users/me`,{
-            method: 'GET',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization" : `Bearer ${jwt}`
-            }
+            headers: this._headers,
         })
             .then((res) => {
                 return this._getResponseData(res);

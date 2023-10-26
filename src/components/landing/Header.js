@@ -4,8 +4,6 @@ import {CurrentUserContext} from "../../contexts/CurrentUserContext";
 
 function Header(props){
 
-    const currentUser = React.useContext(CurrentUserContext);
-
     const location = useLocation();
 
     const authPath = () => {
@@ -19,7 +17,7 @@ function Header(props){
             <div className="header__logo"></div>
             {props.loggedIn ?
                 <div className='header__info'>
-                    <p className='header__email'>{currentUser.email}</p>
+                    <p className='header__email'>{props.userEmail}</p>
                     <Link to='/sign-in' onClick={props.onLogOut} className='header__log-out'>Выйти</Link>
                 </div> : authPath()}
         </header>
