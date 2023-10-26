@@ -1,0 +1,10 @@
+.auth__switch{
+    color: #fff;
+    width: calc(100% - 2.75rem);
+    max-width: 22.375rem;
+    justify-content: center;
+    display: flex;
+    flex-direction: row;
+    margin: 0 auto;
+    font-size: 0.875rem;
+}

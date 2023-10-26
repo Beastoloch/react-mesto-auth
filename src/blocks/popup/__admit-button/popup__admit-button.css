@@ -1,0 +1,33 @@
+.popup__admit-button{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    font-size: 1.125rem;
+    font-weight: 400;
+    line-height: 1.361rem;
+    color: #FFFFFF;
+    background-color: #000000;
+    width: 100%;
+    max-width: 22.375rem;
+    height: 3.125rem;
+    border-radius: 2px;
+    margin: 1.2rem auto 2.313rem;
+    cursor: pointer;
+    transition: opacity 0.3s linear;
+}
+
+.popup__admit-button:hover{
+    opacity: 0.8;
+}
+
+@media screen and (max-width: 620px){
+    .popup__admit-button{
+        padding: 0;
+        font-size: 0.875rem;
+        line-height: 1.059rem;
+        margin-bottom: 1.563rem;
+        margin-top: 1.013rem;
+        height: 2.875rem;
+    }
+}

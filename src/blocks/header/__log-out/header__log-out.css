@@ -1,0 +1,12 @@
+.header__log-out{
+    font-size: 1.125rem;
+    font-weight: 400;
+    text-decoration: none;
+    color: #A9A9A9;
+    transition: opacity 0.3s linear;
+    height: min-content;
+}
+
+.header__log-out:hover{
+    opacity: 0.6;
+}

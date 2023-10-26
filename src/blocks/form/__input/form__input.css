@@ -1,0 +1,11 @@
+.form__input{
+    display: flex;
+    font-size: 0.875rem;
+    font-weight: 400;
+    line-height: 1.059rem;
+    width: 100%;
+    padding-bottom: 10px;
+    margin-bottom: 1.875rem;
+    border:none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}

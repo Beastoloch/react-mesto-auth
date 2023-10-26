@@ -1,0 +1,6 @@
+.element__info{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 1.563rem 0.938rem 1.5rem 1.313rem;
+}

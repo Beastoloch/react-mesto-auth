@@ -1,0 +1,8 @@
+.form__input-error_active{
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 400;
+    line-height: 0.781rem;
+    color: #FF0000;
+    min-height: 1.562rem;
+}

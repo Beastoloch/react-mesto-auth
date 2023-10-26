@@ -1,0 +1,13 @@
+.profile__edit-line{
+    display: flex;
+    flex-direction: row;
+}
+
+@media screen and (max-width: 620px){
+    .profile__edit-line{
+        margin: 0 auto;
+        width: 90%;
+        justify-content: center;
+        padding-left: 1.6rem;
+    }
+}
