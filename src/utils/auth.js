@@ -1,4 +1,4 @@
-import {authUrl} from "../../utils/constants";
+import {authUrl} from "./constants";
 
 function getResponseData(res) {
     if (!res.ok) {

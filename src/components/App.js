@@ -15,7 +15,7 @@ import {
 } from "../utils/constants";
 import ProtectedRouteElement from "./landing/ProtectedRoute";
 import api from "../utils/Api";
-import {registerUser, loginUser, checkToken} from "./landing/Auth";
+import {registerUser, loginUser, checkToken} from "../utils/auth";
 import {CurrentUserContext} from "../contexts/CurrentUserContext";
 import InfoTooltip from "./landing/InfoTooltip";
 
@@ -41,15 +41,22 @@ function App() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        api.getUserInfo()
-            .then(user => {
-                setCurrentUser(user);
-            })
-            .catch((err)=>{
-                console.log(`Ошибка...: ${err}`);
-            })
-    }, [loggedIn])
-
+        if(isTokenExist()){
+            Promise.all([
+                api.getUserInfo(),
+                api.getInitialCards()
+            ])
+                .then((values) => {
+                    let userLoadedInfo, cardsData;
+                    [userLoadedInfo, cardsData] = values;
+                    setCurrentUser(userLoadedInfo);
+                    setCards(cardsData);
+                })
+                .catch((err)=>{
+                    console.log(`Ошибка...: ${err}`);
+                })
+        }
+    }, [loggedIn]);
 
     useEffect(() => {
         if(isTokenExist()){
@@ -66,19 +73,7 @@ function App() {
                     navigate('/sign-in', {replace: true});
                 });
         }
-    }, [loggedIn])
-
-    useEffect(() => {
-        if(isTokenExist()){
-            api.getInitialCards()
-                .then(value => {
-                    setCards(value.reverse());
-                })
-                .catch((err)=>{
-                    console.log(`Ошибка...: ${err}`);
-                })
-        }
-    }, [loggedIn]);
+    }, [])
 
     useEffect(() => {
         const close = (evt) => {
@@ -190,7 +185,7 @@ function App() {
         setCreateBtn(submitBtnMessage);
         api.postNewCard(card.name, card.link)
             .then(newCard => {
-                setCards([newCard, ...cards]);
+                setCards(state => [newCard, ...state]);
                 closeAllPopups();
             })
             .catch((err)=>{

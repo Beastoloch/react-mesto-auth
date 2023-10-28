@@ -17,9 +17,7 @@ class Api {
         return fetch(`${this._baseUrl}/cards`,
             {headers: this._headers})
             .then((res) => {
-                return this._getResponseData(res).then((data) => {
-                    return data.reverse();
-                })
+                return this._getResponseData(res)
             });
     }
 
