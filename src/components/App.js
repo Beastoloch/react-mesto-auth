@@ -26,10 +26,10 @@ function App() {
     const [isEditProfilePopupOpen, setEditProfilePopupState] = useState(false);
     const [isDeletePlacePopupOpen, setDeletePlacePopupState] = useState(false);
     const [isInfoTooltipPopupOpen, setInfoTooltipPopupState] = useState(false);
+    const [isImagePopupOpen, setImagePopupState] = useState(false);
     const [isAnyPopupOpen, setAnyPopupState] = useState(false);
     const [selectedCard, setSelectedCard] = useState({});
     const [cardToDelete, setCardToDelete] = useState({});
-    const [isImagePopupOpen, setImagePopupState] = useState(false);
     const [currentUser, setCurrentUser] = useState({});
     const [cards, setCards] = useState([]);
     const [loggedIn, setLoggedIn] = useState(false);
@@ -40,17 +40,22 @@ function App() {
     const [createBtn, setCreateBtn] = useState(createBtnMessageDefault);
     const navigate = useNavigate();
 
+    const getToken = () => {
+        return localStorage.getItem('jwt');
+    }
+
     useEffect(() => {
-        if(isTokenExist()){
+        if(getToken()){
             Promise.all([
-                api.getUserInfo(),
-                api.getInitialCards()
+                api.getUserInfo(getToken()),
+                api.getInitialCards(getToken())
             ])
                 .then((values) => {
                     let userLoadedInfo, cardsData;
                     [userLoadedInfo, cardsData] = values;
-                    setCurrentUser(userLoadedInfo);
-                    setCards(cardsData);
+                    setCurrentUser(userLoadedInfo.data);
+                    setCards(cardsData.data.reverse());
+                    setUserEmail(userLoadedInfo.data.email);
                 })
                 .catch((err)=>{
                     console.log(`Ошибка...: ${err}`);
@@ -59,8 +64,8 @@ function App() {
     }, [loggedIn]);
 
     useEffect(() => {
-        if(isTokenExist()){
-            checkToken(localStorage.getItem('jwt'))
+        if(getToken()){
+            checkToken(getToken())
                 .then(value => {
                     if(value) {
                         setUserEmail(value.data.email);
@@ -84,10 +89,6 @@ function App() {
         window.addEventListener('keydown', close);
         return () => window.removeEventListener('keydown', close)
     },[isAnyPopupOpen]);
-
-    const isTokenExist = () => {
-        return localStorage.getItem('jwt')
-    }
 
     const handleOverlayClose = (evt) => {
         if(evt.target === evt.currentTarget)
@@ -122,12 +123,12 @@ function App() {
     }
 
     const handleCardLike = (card) => {
-        const isLiked = card.likes.some(i => i._id === currentUser._id);
-        api.changeLikeCardStatus(card._id, !isLiked)
+        const isLiked = card.likes.some(i => i === currentUser._id);
+        api.changeLikeCardStatus(card._id, !isLiked, getToken())
             .then((newCard) => {
                 setCards((state) =>
                     state.map((c) =>
-                        c._id === card._id ? newCard : c));
+                        c._id === card._id ? newCard.data : c));
             })
             .catch((err)=>{
                 console.log(`Ошибка...: ${err}`);
@@ -136,8 +137,8 @@ function App() {
 
     const handleCardDelete = (card) => {
         setDeleteBtn(deleteBtnMessage);
-        api.deleteCard(card._id)
-            .then((deletedCard) => {
+        api.deleteCard(card._id, getToken())
+            .then(() => {
                 setCards((state) =>
                     state.filter((c) =>
                         c._id !== card._id))
@@ -153,9 +154,15 @@ function App() {
 
     const handleUpdateUser = (userInfo) => {
         setSubmitBtn(submitBtnMessage);
-        api.setUserInfo(userInfo.name, userInfo.about)
+        api.setUserInfo(userInfo.name, userInfo.about, getToken())
             .then(user => {
-                setCurrentUser(user);
+                console.log(user);
+                setCurrentUser({
+                    ...currentUser,
+                    name: user.data.name,
+                    about: user.data.about
+                });
+                console.log(currentUser);
                 closeAllPopups();
             })
             .catch((err)=>{
@@ -168,9 +175,12 @@ function App() {
 
     const handleUpdateAvatar = (avatarLink) => {
         setSubmitBtn(submitBtnMessage);
-        api.setUserAvatar(avatarLink)
+        api.setUserAvatar(avatarLink, getToken())
             .then(user => {
-                setCurrentUser(user);
+                setCurrentUser({
+                    ...currentUser,
+                    avatar: user.data.avatar
+                });
                 closeAllPopups();
             })
             .catch((err)=>{
@@ -183,9 +193,9 @@ function App() {
 
     const handleAddPlaceSubmit = (card) => {
         setCreateBtn(submitBtnMessage);
-        api.postNewCard(card.name, card.link)
+        api.postNewCard(card.name, card.link, getToken())
             .then(newCard => {
-                setCards(state => [newCard, ...state]);
+                setCards(state => [newCard.data, ...state]);
                 closeAllPopups();
             })
             .catch((err)=>{
@@ -244,21 +254,22 @@ function App() {
         setInfoTooltipPopupState(false);
         setAnyPopupState(false);
     }
+
     return (
         <div className="page">
             <CurrentUserContext.Provider value={currentUser}>
                 <Header loggedIn={loggedIn} onLogOut={handleLogOut} userEmail={userEmail}/>
                 <Routes>
-                    <Route path='/'
+                    <Route path='/*'
                            element={<ProtectedRouteElement
                                element={Main} onCardClick={handleCardClick} onEditAvatar={handleEditAvatarClick}
-                               onEditProfile={handleEditProfileClick} onAddPlace={handleAddPlaceClick}
+                               onEditProfile={handleEditProfileClick} onAddPlace={handleAddPlaceClick} user={currentUser}
                                cards={cards} onCardLike={handleCardLike} onDeletePlace={handleDeletePlaceClick} loggedIn={loggedIn}/>}/>
                     <Route path='/sign-up' element={(!loggedIn) ? <Register onSubmit={handleRegisterSubmit}/>  : <Navigate to='/' replace />}/>
                     <Route path='/sign-in' element={(!loggedIn) ? <Login onSubmit={handleLoginSubmit}/>  : <Navigate to='/' replace />}/>
                 </Routes>
                 <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser}
-                                 onOverlayClose={handleOverlayClose} btnMessage={submitBtn}/>
+                                 onOverlayClose={handleOverlayClose} btnMessage={submitBtn} user={currentUser}/>
                 <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit}
                                  onOverlayClose={handleOverlayClose} btnMessage={createBtn}/>
                 <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar}

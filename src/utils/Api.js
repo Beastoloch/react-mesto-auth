@@ -1,9 +1,8 @@
-import {options} from "./constants";
+import {authUrl} from "./constants";
 
 class Api {
-    constructor(options) {
-        this._baseUrl = options.baseUrl;
-        this._headers = options.headers;
+    constructor(url) {
+        this._baseUrl = url;
     }
 
     _getResponseData(res) {
@@ -13,26 +12,37 @@ class Api {
         return res.json();
     }
 
-    getInitialCards(){
-        return fetch(`${this._baseUrl}/cards`,
-            {headers: this._headers})
+    getInitialCards(jwt){
+        return fetch(`${this._baseUrl}/cards`, {
+            headers: {
+                authorization: `Bearer ${jwt}`,
+                'Content-Type': 'application/json'
+            }
+        })
             .then((res) => {
                 return this._getResponseData(res)
             });
     }
 
-    getUserInfo(){
-        return fetch(`${this._baseUrl}/users/me`,
-            {headers: this._headers})
+    getUserInfo(jwt){
+        return fetch(`${this._baseUrl}/users/me`, {
+            headers: {
+                authorization: `Bearer ${jwt}`,
+                'Content-Type': 'application/json'
+            }
+        })
             .then((res) => {
                 return this._getResponseData(res)
             });
     }
 
-    postNewCard(name, link) {
+    postNewCard(name, link, jwt) {
         return fetch(`${this._baseUrl}/cards`, {
             method: 'POST',
-            headers: this._headers,
+                headers: {
+                    authorization: `Bearer ${jwt}`,
+                    'Content-Type': 'application/json'
+                },
             body: JSON.stringify({
                 name: name,
                 link: link
@@ -43,10 +53,13 @@ class Api {
             });
     }
 
-    setUserInfo(name, info){
+    setUserInfo(name, info, jwt){
         return fetch(`${this._baseUrl}/users/me`, {
             method: 'PATCH',
-            headers: this._headers,
+                headers: {
+                    authorization: `Bearer ${jwt}`,
+                    'Content-Type': 'application/json'
+                },
             body: JSON.stringify({
                 name: name,
                 about: info
@@ -57,10 +70,13 @@ class Api {
             });
     }
 
-    setUserAvatar(link) {
+    setUserAvatar(link, jwt) {
         return fetch(`${this._baseUrl}/users/me/avatar`, {
             method: 'PATCH',
-            headers: this._headers,
+                headers: {
+                    authorization: `Bearer ${jwt}`,
+                    'Content-Type': 'application/json'
+                },
             body: JSON.stringify({
                 avatar: link,
             })
@@ -70,20 +86,26 @@ class Api {
             });
     }
 
-    changeLikeCardStatus(id, isLiked) {
+    changeLikeCardStatus(id, isLiked, jwt) {
         return fetch(`${this._baseUrl}/cards/${id}/likes`, {
             method: isLiked ? 'PUT' : 'DELETE',
-            headers: this._headers,
+                headers: {
+                    authorization: `Bearer ${jwt}`,
+                    'Content-Type': 'application/json'
+                }
         })
             .then((res) => {
                 return this._getResponseData(res);
             });
     }
 
-    deleteCard(id) {
+    deleteCard(id, jwt) {
         return fetch(`${this._baseUrl}/cards/${id}`, {
             method: 'DELETE',
-            headers: this._headers,
+                headers: {
+                    authorization: `Bearer ${jwt}`,
+                    'Content-Type': 'application/json'
+                }
         })
             .then((res) => {
                 return this._getResponseData(res);
@@ -91,7 +113,7 @@ class Api {
     }
 }
 
-const api = new Api(options);
+const api = new Api(authUrl);
 
 export default api;
 
