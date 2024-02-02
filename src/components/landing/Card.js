@@ -5,9 +5,9 @@ function Card(props) {
 
     const currentUser = React.useContext(CurrentUserContext);
 
-    const isOwn = props.card.owner._id === currentUser._id;
+    const isOwn = props.card.owner === currentUser._id;
 
-    const isLiked = props.card.likes.some(i => i._id === currentUser._id);
+    const isLiked = props.card.likes ? props.card.likes.some(i => i === currentUser._id) : false;
 
     const cardLikeButtonClassName = (
         `element__like-button ${isLiked && 'element__like-button_active'}`
@@ -33,7 +33,7 @@ function Card(props) {
                 <h3 className="element__title">{props.card.name}</h3>
                 <div className="element__like-section">
                     <button className={cardLikeButtonClassName} onClick={handleLikeClick} type="button"/>
-                    <p className="element__like-count">{props.card.likes.length}</p>
+                    <p className="element__like-count">{props.card.likes ? props.card.likes.length : 0}</p>
                 </div>
             </div>
         </article>
